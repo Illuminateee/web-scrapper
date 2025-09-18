@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Scraper API Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .results {
+            margin-top: 30px;
+        }
+        
+        .job-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .job-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .job-company {
+            font-size: 16px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        
+        .job-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .job-detail {
+            background: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .skills {
+            margin-top: 10px;
+        }
+        
+        .skill {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 2px;
+        }
+        
+        .analytics {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .analytics h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Job Scraper API Tester</h1>
+        
+        <form id="searchForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="title">Job Title:</label>
+                    <input type="text" id="title" placeholder="e.g., Backend Developer, Golang">
+                </div>
+                <div class="form-group">
+                    <label for="location">Location:</label>
+                    <input type="text" id="location" placeholder="e.g., San Francisco, Remote">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="experience_level">Experience Level:</label>
+                    <select id="experience_level">
+                        <option value="">Any</option>
+                        <option value="entry">Entry Level</option>
+                        <option value="mid">Mid Level</option>
+                        <option value="senior">Senior Level</option>
+                        <option value="lead">Lead Level</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="degree_required">Degree Required:</label>
+                    <select id="degree_required">
+                        <option value="">Any</option>
+                        <option value="true">Required</option>
+                        <option value="false">Not Required</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="min_salary">Min Salary:</label>
+                    <input type="number" id="min_salary" placeholder="e.g., 80000">
+                </div>
+                <div class="form-group">
+                    <label for="max_salary">Max Salary:</label>
+                    <input type="number" id="max_salary" placeholder="e.g., 150000">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="skills">Skills (comma-separated):</label>
+                    <input type="text" id="skills" placeholder="e.g., Go, Docker, Kubernetes">
+                </div>
+                <div class="form-group">
+                    <label for="remote_only">Remote Only:</label>
+                    <select id="remote_only">
+                        <option value="">Any</option>
+                        <option value="true">Remote Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="locations">Multiple Locations (comma-separated):</label>
+                    <input type="text" id="locations" placeholder="e.g., New York, San Francisco, Remote">
+                </div>
+                <div class="form-group">
+                    <label for="job_category">Job Category:</label>
+                    <select id="job_category">
+                        <option value="">All Categories</option>
+                        <option value="technology">Technology/IT</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="finance">Finance</option>
+                        <option value="retail">Retail/Sales</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="job_sites">Custom Job Sites (comma-separated URLs):</label>
+                <input type="text" id="job_sites" placeholder="e.g., https://example-jobs.com, https://another-site.com">
+            </div>
+            
+            <button type="submit">🔍 Search Jobs</button>
+            <button type="button" onclick="testHealth()">❤️ Health Check</button>
+            <button type="button" onclick="getAnalytics()">📊 Analytics</button>
+            <button type="button" onclick="clearCache()">🗑️ Clear Cache</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <p>🔄 Loading...</p>
+        </div>
+        
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/v1';
+        
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            searchJobs();
+        });
+        
+        async function searchJobs() {
+            const formData = new FormData(document.getElementById('searchForm'));
+            const params = new URLSearchParams();
+            
+            // Build query parameters
+            const fields = ['title', 'location', 'locations', 'experience_level', 'degree_required', 'min_salary', 'max_salary', 'skills', 'remote_only', 'job_category', 'job_sites'];
+            fields.forEach(field => {
+                const value = document.getElementById(field).value;
+                if (value) {
+                    params.append(field, value);
+                }
+            });
+            
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE}/jobs/search?${params.toString()}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    displayError('Search failed: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                displayError('Network error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function testHealth() {
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayRawData('Health Check', data);
+                } else {
+                    displayError('Health check failed');
+                }
+            } catch (error) {
+                displayError('Health check error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function getAnalytics() {
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE}/analytics`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayAnalytics(data);
+                } else {
+                    displayError('Analytics failed');
+                }
+            } catch (error) {
+                displayError('Analytics error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function clearCache() {
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE}/cache/clear`, { method: 'POST' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayRawData('Cache Cleared', data);
+                } else {
+                    displayError('Clear cache failed');
+                }
+            } catch (error) {
+                displayError('Clear cache error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            let html = '';
+            
+            // Analytics section
+            if (data.analytics) {
+                html += `
+                    <div class="analytics">
+                        <h3>📊 Search Analytics</h3>
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="stat-value">${data.total || 0}</div>
+                                <div class="stat-label">Total Jobs</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">$${Math.round(data.analytics.average_salary || 0).toLocaleString()}</div>
+                                <div class="stat-label">Average Salary</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${data.analytics.top_skills?.length || 0}</div>
+                                <div class="stat-label">Skills Found</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${data.analytics.top_companies?.length || 0}</div>
+                                <div class="stat-label">Companies</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Jobs section
+            html += `<h3>💼 Job Results (${data.jobs?.length || 0} jobs)</h3>`;
+            
+            if (data.jobs && data.jobs.length > 0) {
+                data.jobs.forEach(job => {
+                    html += `
+                        <div class="job-card">
+                            <div class="job-title">${job.title}</div>
+                            <div class="job-company">${job.company} - ${job.location}</div>
+                            <div class="job-details">
+                                <span class="job-detail">💰 $${job.salary_min?.toLocaleString() || 'N/A'} - $${job.salary_max?.toLocaleString() || 'N/A'}</span>
+                                <span class="job-detail">📈 ${job.experience_level}</span>
+                                <span class="job-detail">🏠 ${job.remote_option}</span>
+                                <span class="job-detail">🎓 ${job.degree_required ? 'Degree Required' : 'No Degree Required'}</span>
+                                <span class="job-detail">📅 ${new Date(job.posted_date).toLocaleDateString()}</span>
+                            </div>
+                            ${job.skills && job.skills.length > 0 ? `
+                                <div class="skills">
+                                    <strong>Skills:</strong>
+                                    ${job.skills.map(skill => `<span class="skill">${skill}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p>No jobs found matching your criteria.</p>';
+            }
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function displayAnalytics(data) {
+            const resultsDiv = document.getElementById('results');
+            let html = `
+                <div class="analytics">
+                    <h3>📊 Job Market Analytics</h3>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value">${data.total_jobs || 0}</div>
+                            <div class="stat-label">Total Jobs</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$${Math.round(data.average_salary || 0).toLocaleString()}</div>
+                            <div class="stat-label">Average Salary</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$${Math.round(data.salary_range?.median || 0).toLocaleString()}</div>
+                            <div class="stat-label">Median Salary</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>🔝 Top Skills</h3>
+                <div class="skills">
+                    ${data.top_skills?.map(skill => `<span class="skill">${skill.skill} (${skill.count})</span>`).join('') || 'No skills data'}
+                </div>
+                
+                <h3>🏢 Top Companies</h3>
+                <div class="skills">
+                    ${data.top_companies?.map(company => `<span class="skill">${company.company} (${company.count})</span>`).join('') || 'No companies data'}
+                </div>
+                
+                <h3>📋 Full Analytics Data</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function displayRawData(title, data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+        
+        function displayError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+    </script>
+</body>
+</html>

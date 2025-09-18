@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Market Scraper</title>
+    <!-- React and ReactDOM via CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Material-UI via CDN -->
+    <script src="https://unpkg.com/@mui/material@5.14.18/umd/material-ui.development.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .search-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            flex: 1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+        
+        .results {
+            margin-top: 2rem;
+        }
+        
+        .job-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .job-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .job-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .job-company {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .job-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .job-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+        }
+        
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .skill {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+        }
+        
+        .analytics {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 5px;
+            border-left: 4px solid #c62828;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const API_BASE = 'http://localhost:8080/api/v1';
+
+        function JobSearchApp() {
+            const [filters, setFilters] = useState({
+                title: '',
+                location: '',
+                locations: '',
+                experience_level: '',
+                degree_required: '',
+                min_salary: '',
+                max_salary: '',
+                skills: '',
+                remote_only: '',
+                job_category: '',
+                job_sites: ''
+            });
+            
+            const [results, setResults] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState('');
+
+            const handleInputChange = (field, value) => {
+                setFilters(prev => ({
+                    ...prev,
+                    [field]: value
+                }));
+            };
+
+            const searchJobs = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError('');
+
+                const params = new URLSearchParams();
+                Object.entries(filters).forEach(([key, value]) => {
+                    if (value.trim()) {
+                        params.append(key, value);
+                    }
+                });
+
+                try {
+                    const response = await fetch(`${API_BASE}/jobs/search?${params.toString()}`);
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        setResults(data);
+                    } else {
+                        setError('Search failed: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (err) {
+                    setError('Network error: ' + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const testHealth = async () => {
+                setLoading(true);
+                try {
+                    const response = await fetch(`${API_BASE}/health`);
+                    const data = await response.json();
+                    alert(`Health Check: ${data.status} at ${data.time}`);
+                } catch (err) {
+                    alert('Health check failed: ' + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const clearCache = async () => {
+                setLoading(true);
+                try {
+                    const response = await fetch(`${API_BASE}/cache/clear`, { method: 'POST' });
+                    const data = await response.json();
+                    alert(data.message);
+                } catch (err) {
+                    alert('Clear cache failed: ' + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>🔍 Job Market Scraper</h1>
+                        <p>Find your perfect job across multiple categories and locations</p>
+                    </div>
+
+                    <form className="search-form" onSubmit={searchJobs}>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Job Title</label>
+                                <input 
+                                    type="text" 
+                                    value={filters.title}
+                                    onChange={(e) => handleInputChange('title', e.target.value)}
+                                    placeholder="e.g., Developer, Nurse, Analyst"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Location</label>
+                                <input 
+                                    type="text" 
+                                    value={filters.location}
+                                    onChange={(e) => handleInputChange('location', e.target.value)}
+                                    placeholder="e.g., New York, Remote"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Multiple Locations</label>
+                                <input 
+                                    type="text" 
+                                    value={filters.locations}
+                                    onChange={(e) => handleInputChange('locations', e.target.value)}
+                                    placeholder="e.g., New York, San Francisco, Remote"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Job Category</label>
+                                <select 
+                                    value={filters.job_category}
+                                    onChange={(e) => handleInputChange('job_category', e.target.value)}
+                                >
+                                    <option value="">All Categories</option>
+                                    <option value="technology">Technology/IT</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="finance">Finance</option>
+                                    <option value="retail">Retail/Sales</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Experience Level</label>
+                                <select 
+                                    value={filters.experience_level}
+                                    onChange={(e) => handleInputChange('experience_level', e.target.value)}
+                                >
+                                    <option value="">Any</option>
+                                    <option value="entry">Entry Level</option>
+                                    <option value="mid">Mid Level</option>
+                                    <option value="senior">Senior Level</option>
+                                    <option value="lead">Lead Level</option>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Degree Required</label>
+                                <select 
+                                    value={filters.degree_required}
+                                    onChange={(e) => handleInputChange('degree_required', e.target.value)}
+                                >
+                                    <option value="">Any</option>
+                                    <option value="true">Required</option>
+                                    <option value="false">Not Required</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Min Salary</label>
+                                <input 
+                                    type="number" 
+                                    value={filters.min_salary}
+                                    onChange={(e) => handleInputChange('min_salary', e.target.value)}
+                                    placeholder="e.g., 50000"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Max Salary</label>
+                                <input 
+                                    type="number" 
+                                    value={filters.max_salary}
+                                    onChange={(e) => handleInputChange('max_salary', e.target.value)}
+                                    placeholder="e.g., 150000"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Skills (comma-separated)</label>
+                                <input 
+                                    type="text" 
+                                    value={filters.skills}
+                                    onChange={(e) => handleInputChange('skills', e.target.value)}
+                                    placeholder="e.g., React, Node.js, Python"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Remote Only</label>
+                                <select 
+                                    value={filters.remote_only}
+                                    onChange={(e) => handleInputChange('remote_only', e.target.value)}
+                                >
+                                    <option value="">Any</option>
+                                    <option value="true">Remote Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Custom Job Sites (comma-separated URLs)</label>
+                            <input 
+                                type="text" 
+                                value={filters.job_sites}
+                                onChange={(e) => handleInputChange('job_sites', e.target.value)}
+                                placeholder="e.g., https://example-jobs.com, https://another-site.com"
+                            />
+                        </div>
+
+                        <button type="submit" className="btn" disabled={loading}>
+                            🔍 Search Jobs
+                        </button>
+                        <button type="button" className="btn" onClick={testHealth} disabled={loading}>
+                            ❤️ Health Check
+                        </button>
+                        <button type="button" className="btn" onClick={clearCache} disabled={loading}>
+                            🗑️ Clear Cache
+                        </button>
+                    </form>
+
+                    {loading && (
+                        <div className="loading">
+                            <h3>🔄 Searching jobs...</h3>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="error">
+                            ❌ {error}
+                        </div>
+                    )}
+
+                    {results && (
+                        <div className="results">
+                            <div className="analytics">
+                                <h2>📊 Search Analytics</h2>
+                                <div className="stats-grid">
+                                    <div className="stat-card">
+                                        <div className="stat-value">{results.total || 0}</div>
+                                        <div className="stat-label">Total Jobs</div>
+                                    </div>
+                                    <div className="stat-card">
+                                        <div className="stat-value">${Math.round(results.analytics?.average_salary || 0).toLocaleString()}</div>
+                                        <div className="stat-label">Average Salary</div>
+                                    </div>
+                                    <div className="stat-card">
+                                        <div className="stat-value">{results.analytics?.top_skills?.length || 0}</div>
+                                        <div className="stat-label">Skills Found</div>
+                                    </div>
+                                    <div className="stat-card">
+                                        <div className="stat-value">{results.analytics?.top_companies?.length || 0}</div>
+                                        <div className="stat-label">Companies</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h2>💼 Job Results ({results.jobs?.length || 0} jobs)</h2>
+                            
+                            {results.jobs && results.jobs.length > 0 ? (
+                                results.jobs.map((job, index) => (
+                                    <div key={job.id || index} className="job-card">
+                                        <div className="job-title">{job.title}</div>
+                                        <div className="job-company">{job.company} - {job.location}</div>
+                                        
+                                        <div className="job-details">
+                                            <span className="job-tag">
+                                                💰 ${job.salary_min?.toLocaleString() || 'N/A'} - ${job.salary_max?.toLocaleString() || 'N/A'}
+                                            </span>
+                                            <span className="job-tag">📈 {job.experience_level}</span>
+                                            <span className="job-tag">🏠 {job.remote_option}</span>
+                                            <span className="job-tag">
+                                                🎓 {job.degree_required ? 'Degree Required' : 'No Degree Required'}
+                                            </span>
+                                            <span className="job-tag">
+                                                📅 {new Date(job.posted_date).toLocaleDateString()}
+                                            </span>
+                                        </div>
+
+                                        {job.skills && job.skills.length > 0 && (
+                                            <div>
+                                                <strong>Skills:</strong>
+                                                <div className="skills">
+                                                    {job.skills.map((skill, skillIndex) => (
+                                                        <span key={skillIndex} className="skill">{skill}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No jobs found matching your criteria. Try adjusting your filters.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<JobSearchApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
