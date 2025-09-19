@@ -1,4 +1,4 @@
-# 🔍 Concurrent Job Market Web Scraper
+# 🔍 Mock Concurrent Job Market Web Scraper
 
 A powerful, concurrent web scraper built with **Go** and **React.js** that aggregates job postings from multiple sources, providing insights into the IT job market with advanced filtering capabilities.
 
